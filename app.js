@@ -52,17 +52,48 @@ const SERVICE_META = {
 };
 
 // ===== DATA =====
-function loadData() {
+const API_BASE_URL = 'http://node.sang0023.io.vn:2753';
+const API_TOKEN = 'creamstore1231';
+
+async function loadData() {
     try {
-        const raw = localStorage.getItem(DB_KEY);
-        accounts = raw ? JSON.parse(raw) : [];
-    } catch(e) { accounts = []; }
+        const res = await fetch(`${API_BASE_URL}/dashboard/api/accounts`, {
+            headers: { 'x-dashboard-token': API_TOKEN }
+        });
+        if (!res.ok) throw new Error('API Error');
+        const data = await res.json();
+        if (data.ok) accounts = data.accounts || [];
+        else accounts = [];
+    } catch(e) { 
+        console.error('Failed to load API, fallback to local', e);
+        try {
+            const raw = localStorage.getItem(DB_KEY);
+            accounts = raw ? JSON.parse(raw) : [];
+        } catch(err) { accounts = []; }
+    }
 }
+
+async function apiSaveAccount(acc, isNew) {
+    const url = isNew ? `${API_BASE_URL}/dashboard/api/accounts` : `${API_BASE_URL}/dashboard/api/accounts/${acc.id}`;
+    fetch(url, {
+        method: isNew ? 'POST' : 'PUT',
+        headers: { 'x-dashboard-token': API_TOKEN, 'Content-Type': 'application/json' },
+        body: JSON.stringify(acc)
+    }).catch(e => console.error(e));
+}
+
+async function apiDeleteAccount(id) {
+    fetch(`${API_BASE_URL}/dashboard/api/accounts/${id}`, {
+        method: 'DELETE',
+        headers: { 'x-dashboard-token': API_TOKEN }
+    }).catch(e => console.error(e));
+}
+
 function saveData() {
     localStorage.setItem(DB_KEY, JSON.stringify(accounts));
 }
 function genId() {
-    return 'acc_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    return 'CR_W_' + Math.floor(Math.random()*1000000);
 }
 
 // ===== ACCOUNT STATUS =====
@@ -440,7 +471,8 @@ function handleAccountSubmit(e) {
             monthsPurchased: months,
             startDate: start.toISOString(), expiryDate: expiry.toISOString()
         };
-        showToast('Đã cập nhật tài khoản!', 'success');
+        apiSaveAccount(accounts[idx], false);
+        showToast('Đã cập nhật tài khoản lên hệ thống bot!', 'success');
     } else {
         const newAcc = {
             id: genId(), service, email, password, profileName, pin,
@@ -457,7 +489,8 @@ function handleAccountSubmit(e) {
             }]
         };
         accounts.unshift(newAcc);
-        showToast('Đã thêm tài khoản mới!', 'success');
+        apiSaveAccount(newAcc, true);
+        showToast('Đã thêm tài khoản mới vào hệ thống bot!', 'success');
     }
 
     saveData();
@@ -510,6 +543,7 @@ function handleRenewSubmit(e) {
         accountEmail: acc.email
     });
 
+    apiSaveAccount(acc, false);
     saveData();
     renderAll();
     closeModal('modal-renew');
@@ -659,6 +693,7 @@ function openDeleteModal(id) {
 function confirmDelete() {
     const id = document.getElementById('delete-account-id').value;
     accounts = accounts.filter(a => a.id !== id);
+    apiDeleteAccount(id);
     saveData();
     renderAll();
     closeModal('modal-delete');
@@ -882,8 +917,8 @@ document.addEventListener('keydown', e => {
 });
 
 // ===== INIT =====
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     initPasswordGate();
-    loadData();
+    await loadData();
     renderAll();
 });
