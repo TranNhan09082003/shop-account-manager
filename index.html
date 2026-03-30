@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Hệ thống quản lý tài khoản dịch vụ số - Netflix, Spotify, YouTube Premium - Theo dõi khách hàng, hạn sử dụng và lịch sử thuê">
+    <title>Shop Account Manager</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header" id="app-header">
+        <div class="header-inner">
+            <div class="header-brand">
+                <div class="logo">
+                    <svg viewBox="0 0 111 30" class="netflix-logo" aria-hidden="true">
+                        <path d="M105.062 14.28L111 30c-1.75-.25-3.499-.563-5.28-.845l-3.345-8.686-3.437 7.969c-1.687-.282-3.344-.376-5.031-.595l6.093-13.515L94.56 0h5.063l3.062 7.874L105.875 0h5.032l-5.845 14.28zM90.47 0l-2.095 14.845L86.03 0H81v30c1.594-.063 3.188-.125 4.78-.188L86 14.375l2.563 15.5c1.562-.063 3.156-.156 4.718-.22L98.28 0H90.47zm-9.408 0H76.03v30h5.063V0zm-12.157 0h-5v27.094c-2.062-.375-3.812-2.25-4.906-3.938L52.5 0h-5v30h5V4.97c1.937 2.906 3.937 5.844 5.906 8.75l3.5 5.313V0zM40.03 0H28.5v5.625h5.78V30h5.75V5.625h5V0h-5zm-14 0H20.97v17.97L14.47 0H9.5v30h5.063V11l7.156 19.188L26.03 30V0zM5.03 0H0v30h5.063V0h-.032z" fill="currentColor"></path>
+                    </svg>
+                </div>
+                <h1 class="header-title">Shop Account Manager</h1>
+            </div>
+            <div class="header-actions">
+                <!-- Notification Bell -->
+                <div style="position:relative" id="notification-wrapper">
+                    <button class="notification-bell" id="btn-notification" onclick="toggleNotificationPanel(event)" title="Thông báo">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                        </svg>
+                        <span class="bell-badge" id="bell-badge" style="display:none">0</span>
+                    </button>
+                    <div class="notification-panel" id="notification-panel">
+                        <div class="notification-panel-header">
+                            <h3>Thông Báo</h3>
+                            <span id="notification-count-text">0 cảnh báo</span>
+                        </div>
+                        <div id="notification-list">
+                            <div class="notification-empty">Không có thông báo</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Export -->
+                <button class="header-tool-btn" onclick="exportData()" title="Xuất Dữ Liệu">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                </button>
+
+                <!-- Import -->
+                <button class="header-tool-btn" onclick="document.getElementById('import-file-input').click()" title="Nhập Dữ Liệu">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                </button>
+                <input type="file" id="import-file-input" accept=".json" onchange="importData(event)">
+
+                <!-- Add Account -->
+                <button class="btn btn-primary btn-glow" id="btn-add-account" onclick="openAddModal()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    <span>Thêm Tài Khoản</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Dashboard Stats -->
+    <section class="dashboard" id="dashboard">
+        <div class="dashboard-inner">
+            <div class="stat-card" id="stat-total" onclick="setFilter('all')">
+                <div class="stat-icon stat-icon-total">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                        <line x1="8" y1="21" x2="16" y2="21"></line>
+                        <line x1="12" y1="17" x2="12" y2="21"></line>
+                    </svg>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-number" id="stat-total-num">0</span>
+                    <span class="stat-label">Tổng Tài Khoản</span>
+                </div>
+            </div>
+            <div class="stat-card" id="stat-active" onclick="setFilter('active')">
+                <div class="stat-icon stat-icon-active">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-number" id="stat-active-num">0</span>
+                    <span class="stat-label">Đang Hoạt Động</span>
+                </div>
+            </div>
+            <div class="stat-card" id="stat-warning" onclick="setFilter('warning')">
+                <div class="stat-icon stat-icon-warning">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                        <line x1="12" y1="9" x2="12" y2="13"></line>
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                    </svg>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-number" id="stat-warning-num">0</span>
+                    <span class="stat-label">Sắp Hết Hạn</span>
+                </div>
+            </div>
+            <div class="stat-card" id="stat-expired" onclick="setFilter('expired')">
+                <div class="stat-icon stat-icon-expired">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="15" y1="9" x2="9" y2="15"></line>
+                        <line x1="9" y1="9" x2="15" y2="15"></line>
+                    </svg>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-number" id="stat-expired-num">0</span>
+                    <span class="stat-label">Đã Hết Hạn</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Filter Bar -->
+    <section class="filter-bar" id="filter-bar">
+        <div class="filter-inner">
+            <div class="search-box">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" id="search-input" placeholder="Tìm kiếm tài khoản, khách hàng, Discord..." oninput="handleSearch()">
+            </div>
+            <div class="sort-control">
+                <select class="sort-select" id="sort-select" onchange="handleSort()">
+                    <option value="newest">Mới nhất</option>
+                    <option value="oldest">Cũ nhất</option>
+                    <option value="expiry-asc">Hết hạn sớm</option>
+                    <option value="expiry-desc">Hết hạn muộn</option>
+                    <option value="name-asc">Tên A-Z</option>
+                    <option value="name-desc">Tên Z-A</option>
+                </select>
+            </div>
+            <div class="sort-control">
+                <select class="sort-select" id="service-filter-select" onchange="handleServiceFilter()">
+                    <option value="all">🌐 Tất cả dịch vụ</option>
+                    <option value="netflix">🎬 Netflix</option>
+                    <option value="spotify">🎵 Spotify</option>
+                    <option value="youtube">▶️ YouTube</option>
+                    <option value="discord">💙 Discord Nitro</option>
+                    <option value="other">📦 Khác</option>
+                </select>
+            </div>
+            <div class="filter-tabs" id="filter-tabs">
+                <button class="filter-tab active" data-filter="all" onclick="setFilter('all')">Tất Cả <span class="tab-count" id="tab-count-all">0</span></button>
+                <button class="filter-tab" data-filter="active" onclick="setFilter('active')">Hoạt Động <span class="tab-count" id="tab-count-active">0</span></button>
+                <button class="filter-tab" data-filter="warning" onclick="setFilter('warning')">Sắp Hết <span class="tab-count" id="tab-count-warning">0</span></button>
+                <button class="filter-tab" data-filter="expired" onclick="setFilter('expired')">Hết Hạn <span class="tab-count" id="tab-count-expired">0</span></button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Cards Grid -->
+    <main class="main-content" id="main-content">
+        <div class="cards-grid" id="cards-grid">
+            <!-- Cards will be rendered by JS -->
+        </div>
+        <div class="empty-state" id="empty-state" style="display: none;">
+            <div class="empty-icon">
+                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                    <line x1="8" y1="21" x2="16" y2="21"></line>
+                    <line x1="12" y1="17" x2="12" y2="21"></line>
+                </svg>
+            </div>
+            <h2>Chưa có tài khoản nào</h2>
+            <p>Nhấn "Thêm Tài Khoản" để bắt đầu quản lý</p>
+            <button class="btn btn-primary" onclick="openAddModal()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                Thêm Tài Khoản Đầu Tiên
+            </button>
+        </div>
+    </main>
+
+    <!-- Add/Edit Modal -->
+    <div class="modal-overlay" id="modal-account" onclick="closeModalOnOverlay(event, 'modal-account')">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2 id="modal-account-title">Thêm Tài Khoản Mới</h2>
+                <button class="modal-close" onclick="closeModal('modal-account')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="account-form" onsubmit="handleAccountSubmit(event)">
+                    <input type="hidden" id="form-edit-id" value="">
+                    
+                    <!-- Service Type -->
+                    <div class="form-section">
+                        <h3 class="form-section-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                                <line x1="8" y1="21" x2="16" y2="21"></line>
+                                <line x1="12" y1="17" x2="12" y2="21"></line>
+                            </svg>
+                            Loại Dịch Vụ &amp; Tài Khoản
+                        </h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="form-service">Dịch Vụ</label>
+                                <select id="form-service" onchange="handleServiceChange()" required>
+                                    <option value="netflix">🎬 Netflix</option>
+                                    <option value="spotify">🎵 Spotify</option>
+                                    <option value="youtube">▶️ YouTube Premium</option>
+                                    <option value="discord">💙 Discord Nitro</option>
+                                    <option value="other">📦 Khác</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="form-email">Email Tài Khoản</label>
+                                <input type="text" id="form-email" placeholder="example@gmail.com" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="form-password">Mật Khẩu</label>
+                                <div class="password-input-wrapper">
+                                    <input type="password" id="form-password" placeholder="••••••••" required>
+                                    <button type="button" class="toggle-password" onclick="togglePassword('form-password', this)">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                            <circle cx="12" cy="12" r="3"></circle>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="form-group" id="field-profile-wrap">
+                                <label for="form-profile">Tên Profile / Gói</label>
+                                <input type="text" id="form-profile" placeholder="Profile 1">
+                            </div>
+                        </div>
+                        <div class="form-row" id="field-pin-wrap">
+                            <div class="form-group">
+                                <label for="form-pin">Mã PIN Profile</label>
+                                <input type="text" id="form-pin" placeholder="1234" maxlength="4">
+                            </div>
+                            <div class="form-group"></div>
+                        </div>
+
+                        <!-- Spotify Family Plan (hidden by default) -->
+                        <div id="spotify-fields" style="display:none">
+                            <div class="spotify-family-banner">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                                Spotify Family Plan
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="form-spotify-owner">Email Chủ Gói</label>
+                                    <input type="text" id="form-spotify-owner" placeholder="owner@gmail.com">
+                                </div>
+                                <div class="form-group">
+                                    <label for="form-spotify-member">Email Thành Viên</label>
+                                    <input type="text" id="form-spotify-member" placeholder="member@gmail.com">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Discord Nitro Fields (hidden by default) -->
+                        <div id="discord-fields" style="display:none">
+                            <div class="discord-renewal-banner">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                                Discord Nitro — Gmail Google Pay &amp; Chu Kỳ Gia Hạn
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="form-discord-payment-gmail">Gmail Google Pay (tài khoản vào gia hạn)</label>
+                                    <input type="text" id="form-discord-payment-gmail" placeholder="payment@gmail.com">
+                                </div>
+                                <div class="form-group">
+                                    <label for="form-discord-renewal-cycle">Chu Kỳ Gia Hạn (tháng/lần)</label>
+                                    <input type="number" id="form-discord-renewal-cycle" placeholder="2" min="1" max="12" value="2">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3 class="form-section-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                            Thông Tin Khách Hàng
+                        </h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="form-customer">Tên Khách Hàng</label>
+                                <input type="text" id="form-customer" placeholder="Nguyễn Văn A" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="form-discord">Discord ID</label>
+                                <input type="text" id="form-discord" placeholder="username#1234">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="form-customer-gmail">Gmail Khách Hàng</label>
+                                <input type="text" id="form-customer-gmail" placeholder="khachhang@gmail.com">
+                            </div>
+                            <div class="form-group"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3 class="form-section-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                            </svg>
+                            Thời Hạn Sử Dụng
+                        </h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="form-months">Số Tháng Mua</label>
+                                <input type="number" id="form-months" placeholder="1" min="1" max="24" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="form-start-date">Ngày Bắt Đầu</label>
+                                <input type="date" id="form-start-date" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-ghost" onclick="closeModal('modal-account')">Hủy</button>
+                        <button type="submit" class="btn btn-primary" id="btn-submit-account">Thêm Tài Khoản</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Renew Modal -->
+    <div class="modal-overlay" id="modal-renew" onclick="closeModalOnOverlay(event, 'modal-renew')">
+        <div class="modal modal-sm" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2>Gia Hạn Tài Khoản</h2>
+                <button class="modal-close" onclick="closeModal('modal-renew')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="renew-info" id="renew-info">
+                    <!-- Filled by JS -->
+                </div>
+                <form id="renew-form" onsubmit="handleRenewSubmit(event)">
+                    <input type="hidden" id="renew-account-id" value="">
+                    <div class="form-group">
+                        <label for="renew-months">Số tháng gia hạn</label>
+                        <input type="number" id="renew-months" placeholder="Nhập số tháng..." min="1" max="24" required>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-ghost" onclick="closeModal('modal-renew')">Hủy</button>
+                        <button type="submit" class="btn btn-success">Xác Nhận Gia Hạn</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- History Modal -->
+    <div class="modal-overlay" id="modal-history" onclick="closeModalOnOverlay(event, 'modal-history')">
+        <div class="modal modal-lg" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2 id="history-title">Lịch Sử Thuê</h2>
+                <button class="modal-close" onclick="closeModal('modal-history')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="history-stats" id="history-stats">
+                    <!-- Stats by JS -->
+                </div>
+                <div class="history-timeline" id="history-timeline">
+                    <!-- Timeline by JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal-overlay" id="modal-delete" onclick="closeModalOnOverlay(event, 'modal-delete')">
+        <div class="modal modal-sm" onclick="event.stopPropagation()">
+            <div class="modal-header modal-header-danger">
+                <h2>Xác Nhận Xóa</h2>
+                <button class="modal-close" onclick="closeModal('modal-delete')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="delete-warning">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ff4757" stroke-width="2">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                        <line x1="12" y1="9" x2="12" y2="13"></line>
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                    </svg>
+                    <p>Bạn có chắc chắn muốn xóa tài khoản này?</p>
+                    <p class="delete-account-name" id="delete-account-name"></p>
+                    <p class="text-muted">Thao tác này không thể hoàn tác.</p>
+                </div>
+                <input type="hidden" id="delete-account-id" value="">
+                <div class="form-actions">
+                    <button class="btn btn-ghost" onclick="closeModal('modal-delete')">Hủy</button>
+                    <button class="btn btn-danger" onclick="confirmDelete()">Xóa Tài Khoản</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detail Modal -->
+    <div class="modal-overlay" id="modal-detail" onclick="closeModalOnOverlay(event, 'modal-detail')">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2>Chi Tiết Tài Khoản</h2>
+                <button class="modal-close" onclick="closeModal('modal-detail')">&times;</button>
+            </div>
+            <div class="modal-body" id="detail-body">
+                <!-- Filled by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer" id="app-footer">
+        <div class="footer-inner">
+            <div class="footer-text">
+                <span>Shop</span> Account Manager &copy; 2026
+            </div>
+            <div class="footer-version">v2.0 Premium</div>
+        </div>
+    </footer>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>
