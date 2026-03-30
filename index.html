@@ -4,13 +4,42 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Hệ thống quản lý tài khoản dịch vụ số - Netflix, Spotify, YouTube Premium - Theo dõi khách hàng, hạn sử dụng và lịch sử thuê">
+    <meta name="robots" content="noindex, nofollow">
     <title>Shop Account Manager</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <style>
+    .password-gate{position:fixed;inset:0;z-index:99999;background:var(--bg-main);display:flex;align-items:center;justify-content:center}
+    .password-box{background:var(--bg-card);border:1px solid var(--border1);border-radius:20px;padding:48px 40px;width:100%;max-width:400px;text-align:center;box-shadow:var(--shadow-lg);animation:fadeInUp .4s cubic-bezier(.34,1.56,.64,1)}
+    .password-logo{font-size:48px;margin-bottom:16px;line-height:1}
+    .password-box h2{font-size:22px;font-weight:800;color:var(--text1);margin:0 0 6px}
+    .password-box p{font-size:14px;color:var(--text3);margin:0 0 24px}
+    .password-input-row{display:flex;gap:8px}
+    .password-input-row input{flex:1;padding:12px 16px;background:var(--bg-input);border:1px solid var(--border2);border-radius:8px;color:var(--text1);font-size:15px;font-family:inherit;outline:none;transition:border .2s}
+    .password-input-row input:focus{border-color:var(--red)}
+    .gate-btn{padding:12px 20px;background:var(--red);color:#fff;border:none;border-radius:8px;font-size:18px;font-weight:700;cursor:pointer;transition:opacity .2s,transform .15s}
+    .gate-btn:hover{opacity:.85;transform:scale(1.05)}
+    @keyframes gate-shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-10px)}40%{transform:translateX(10px)}60%{transform:translateX(-8px)}80%{transform:translateX(8px)}}
+    .gate-shake .password-box{animation:gate-shake .5s ease}
+    </style>
 </head>
 <body>
+
+<!-- PASSWORD GATE -->
+<div id="password-gate" class="password-gate" style="display:none">
+    <div class="password-box">
+        <div class="password-logo">🔐</div>
+        <h2>Shop Account Manager</h2>
+        <p>Nhập mật khẩu để tiếp tục</p>
+        <div class="password-input-row">
+            <input type="password" id="gate-password" placeholder="Mật khẩu..." onkeydown="if(event.key==='Enter') checkPassword()" autofocus>
+            <button class="gate-btn" onclick="checkPassword()">→</button>
+        </div>
+        <div id="gate-error" style="display:none;color:var(--red);font-size:13px;margin-top:10px">❌ Mật khẩu sai, thử lại!</div>
+    </div>
+</div>
     <!-- Header -->
     <header class="header" id="app-header">
         <div class="header-inner">

@@ -1,4 +1,40 @@
 /* Shop Account Manager - Core Application */
+
+// ===== PASSWORD GATE =====
+// Đổi mật khẩu tại đây:
+const APP_PASSWORD = 'admin123';
+const SESSION_KEY = 'sam_auth';
+const SESSION_HOURS = 8;
+
+function checkPassword() {
+    const input = document.getElementById('gate-password').value;
+    const err = document.getElementById('gate-error');
+    if (input === APP_PASSWORD) {
+        const expire = Date.now() + SESSION_HOURS * 60 * 60 * 1000;
+        sessionStorage.setItem(SESSION_KEY, expire);
+        document.getElementById('password-gate').style.display = 'none';
+        err.style.display = 'none';
+    } else {
+        err.style.display = 'block';
+        document.getElementById('gate-password').value = '';
+        document.getElementById('gate-password').focus();
+        document.getElementById('password-gate').classList.add('gate-shake');
+        setTimeout(() => document.getElementById('password-gate').classList.remove('gate-shake'), 500);
+    }
+}
+
+function initPasswordGate() {
+    const saved = sessionStorage.getItem(SESSION_KEY);
+    if (saved && Date.now() < parseInt(saved)) {
+        // Still valid session
+        document.getElementById('password-gate').style.display = 'none';
+    } else {
+        sessionStorage.removeItem(SESSION_KEY);
+        document.getElementById('password-gate').style.display = 'flex';
+        setTimeout(() => document.getElementById('gate-password').focus(), 100);
+    }
+}
+
 const DB_KEY = 'netflix_accounts_db';
 let accounts = [];
 let currentFilter = 'all';
@@ -847,6 +883,7 @@ document.addEventListener('keydown', e => {
 
 // ===== INIT =====
 document.addEventListener('DOMContentLoaded', () => {
+    initPasswordGate();
     loadData();
     renderAll();
 });
