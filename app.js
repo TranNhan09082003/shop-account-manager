@@ -1,21 +1,32 @@
 /* Shop Account Manager - Core Application */
 
 // ===== PASSWORD GATE =====
-// Đổi mật khẩu tại đây:
-const APP_PASSWORD = 'admin123';
-const SESSION_KEY = 'sam_auth';
-const SESSION_HOURS = 8;
+const SESSION_KEY = 'sam_auth_token';
 
-function checkPassword() {
+async function checkPassword() {
     const input = document.getElementById('gate-password').value;
     const err = document.getElementById('gate-error');
-    if (input === APP_PASSWORD) {
-        const expire = Date.now() + SESSION_HOURS * 60 * 60 * 1000;
-        sessionStorage.setItem(SESSION_KEY, expire);
-        document.getElementById('password-gate').style.display = 'none';
-        err.style.display = 'none';
-    } else {
+    err.style.display = 'none';
+
+    try {
+        const res = await fetch(`${API_BASE_URL}/dashboard/api/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password: input })
+        });
+        const data = await res.json();
+        if (data.ok) {
+            sessionStorage.setItem(SESSION_KEY, data.token);
+            API_TOKEN = data.token;
+            document.getElementById('password-gate').style.display = 'none';
+            await loadData();
+            renderAll();
+        } else {
+            throw new Error(data.error || 'Sai mật khẩu!');
+        }
+    } catch(e) {
         err.style.display = 'block';
+        err.textContent = '❌ ' + e.message;
         document.getElementById('gate-password').value = '';
         document.getElementById('gate-password').focus();
         document.getElementById('password-gate').classList.add('gate-shake');
@@ -25,13 +36,14 @@ function checkPassword() {
 
 function initPasswordGate() {
     const saved = sessionStorage.getItem(SESSION_KEY);
-    if (saved && Date.now() < parseInt(saved)) {
-        // Still valid session
+    if (saved) {
+        API_TOKEN = saved;
         document.getElementById('password-gate').style.display = 'none';
+        return true;
     } else {
-        sessionStorage.removeItem(SESSION_KEY);
         document.getElementById('password-gate').style.display = 'flex';
         setTimeout(() => document.getElementById('gate-password').focus(), 100);
+        return false;
     }
 }
 
@@ -53,7 +65,7 @@ const SERVICE_META = {
 
 // ===== DATA =====
 const API_BASE_URL = 'http://node.sang0023.io.vn:2753';
-const API_TOKEN = 'creamstore1231';
+let API_TOKEN = '';
 
 async function loadData() {
     try {
@@ -122,6 +134,60 @@ function getProgressPercent(acc) {
 function renderAll() {
     updateStats();
     renderCards();
+    renderChart();
+}
+
+let dashboardChart = null;
+function renderChart() {
+    if (typeof Chart === 'undefined') return;
+    const ctx = document.getElementById('revenueChart');
+    if (!ctx) return;
+    
+    const count = { netflix: 0, spotify: 0, youtube: 0, discord: 0, other: 0 };
+    accounts.forEach(a => {
+        const t = a.service || 'netflix';
+        if (count[t] !== undefined) count[t]++;
+        else count.other++;
+    });
+
+    const data = {
+        labels: ['Netflix', 'Spotify', 'YouTube', 'Discord', 'Khác'],
+        datasets: [{
+            label: 'Số dư tài khoản',
+            data: [count.netflix, count.spotify, count.youtube, count.discord, count.other],
+            backgroundColor: [
+                'rgba(239, 68, 68, 0.8)',
+                'rgba(16, 185, 129, 0.8)',
+                'rgba(245, 158, 11, 0.8)',
+                'rgba(139, 92, 246, 0.8)',
+                'rgba(100, 116, 139, 0.8)'
+            ],
+            borderColor: 'transparent',
+            borderRadius: 6
+        }]
+    };
+
+    if (dashboardChart) {
+        dashboardChart.data = data;
+        dashboardChart.update();
+    } else {
+        dashboardChart = new Chart(ctx, {
+            type: 'bar',
+            data: data,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    title: { display: true, text: 'PHÂN BỔ DỊCH VỤ CREAME STORE', color: '#94a3b8', font: { size: 14, weight: '700' } }
+                },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b' } },
+                    x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+                }
+            }
+        });
+    }
 }
 
 function updateStats() {
@@ -918,7 +984,9 @@ document.addEventListener('keydown', e => {
 
 // ===== INIT =====
 document.addEventListener('DOMContentLoaded', async () => {
-    initPasswordGate();
-    await loadData();
-    renderAll();
+    const isLoggedIn = initPasswordGate();
+    if (isLoggedIn) {
+        await loadData();
+        renderAll();
+    }
 });

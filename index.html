@@ -31,7 +31,7 @@
 <div id="password-gate" class="password-gate" style="display:none">
     <div class="password-box">
         <div class="password-logo">🔐</div>
-        <h2>Shop Account Manager</h2>
+        <h2>Cream Store Dashboard</h2>
         <p>Nhập mật khẩu để tiếp tục</p>
         <div class="password-input-row">
             <input type="password" id="gate-password" placeholder="Mật khẩu..." onkeydown="if(event.key==='Enter') checkPassword()" autofocus>
@@ -49,7 +49,7 @@
                         <path d="M105.062 14.28L111 30c-1.75-.25-3.499-.563-5.28-.845l-3.345-8.686-3.437 7.969c-1.687-.282-3.344-.376-5.031-.595l6.093-13.515L94.56 0h5.063l3.062 7.874L105.875 0h5.032l-5.845 14.28zM90.47 0l-2.095 14.845L86.03 0H81v30c1.594-.063 3.188-.125 4.78-.188L86 14.375l2.563 15.5c1.562-.063 3.156-.156 4.718-.22L98.28 0H90.47zm-9.408 0H76.03v30h5.063V0zm-12.157 0h-5v27.094c-2.062-.375-3.812-2.25-4.906-3.938L52.5 0h-5v30h5V4.97c1.937 2.906 3.937 5.844 5.906 8.75l3.5 5.313V0zM40.03 0H28.5v5.625h5.78V30h5.75V5.625h5V0h-5zm-14 0H20.97v17.97L14.47 0H9.5v30h5.063V11l7.156 19.188L26.03 30V0zM5.03 0H0v30h5.063V0h-.032z" fill="currentColor"></path>
                     </svg>
                 </div>
-                <h1 class="header-title">Shop Account Manager</h1>
+                <h1 class="header-title">Cream Store Dashboard</h1>
             </div>
             <div class="header-actions">
                 <!-- Notification Bell -->
@@ -157,6 +157,9 @@
                     <span class="stat-label">Đã Hết Hạn</span>
                 </div>
             </div>
+        </div>
+        <div class="dashboard-analytics" style="max-width: 1440px; margin: 20px auto 0; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 20px; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);">
+            <canvas id="revenueChart" style="max-height: 250px; width: 100%;"></canvas>
         </div>
     </section>
 
@@ -479,6 +482,7 @@
     <!-- Toast Container -->
     <div class="toast-container" id="toast-container"></div>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
