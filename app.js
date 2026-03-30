@@ -64,7 +64,7 @@ const SERVICE_META = {
 };
 
 // ===== DATA =====
-const API_BASE_URL = 'http://node.sang0023.io.vn:2753';
+const API_BASE_URL = window.location.origin;
 let API_TOKEN = '';
 
 async function loadData() {
@@ -99,6 +99,27 @@ async function apiDeleteAccount(id) {
         method: 'DELETE',
         headers: { 'x-dashboard-token': API_TOKEN }
     }).catch(e => console.error(e));
+}
+
+async function apiDeliverAccount(id) {
+    if(!confirm('Bạn có chắc chắn muốn giao tài khoản này qua tin nhắn riêng (DM) cho khách trên Discord không?')) return;
+    showToast('Đang tiến hành gửi DM...', 'info');
+    try {
+        const res = await fetch(`${API_BASE_URL}/dashboard/api/accounts/${id}/deliver`, {
+            method: 'POST',
+            headers: { 'x-dashboard-token': API_TOKEN }
+        });
+        const data = await res.json();
+        if(data.ok) {
+            showToast('✅ Đã giao tài khoản thành công qua DM!', 'success');
+            await loadData();
+            renderAll();
+        } else {
+            showToast('❌ Lỗi giao hàng: ' + (data.error || 'Unknown Error'), 'error');
+        }
+    } catch(e) {
+        showToast('❌ Lỗi mạng khi giao hàng.', 'error');
+    }
 }
 
 function saveData() {
@@ -316,6 +337,10 @@ function renderCards() {
                             <button class="dropdown-item success" onclick="openRenewModal('${acc.id}')">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
                                 Gia Hạn
+                            </button>
+                            <button class="dropdown-item" style="color: #c084fc" onclick="apiDeliverAccount('${acc.id}')">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                                Giao Qua DM
                             </button>
                             <button class="dropdown-item" onclick="openHistoryModal('${acc.id}')">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
